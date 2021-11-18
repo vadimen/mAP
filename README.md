@@ -1,9 +1,12 @@
-What I changed: 
-In this version there is calculated map@0.5 and map@0.5:0.95
+What I changed:
+main.py
+In this version there is calculated map@0.5 and map@0.5:0.95, Precision and Recall per class as in ultralitycs yolov5 (the code added is taken from there)
 
-added:
-conv_gt_dr_yol5_to_repo_format.py
-conv_dr_yol4_to_repo_format.py -> converts result.txt from yolov4
+What I added:
+conv_gt_dr_yol5_to_repo_format.py -> converts grount truth for yolov4&v5 and detection results of yolov5 to this repo format
+conv_dr_yol4_to_repo_format.py -> converts result.txt from yolov4 to this repo format
+
+Still there is some difference between this results and original yolov5 repo results.
 
 # mAP (mean Average Precision)
 

@@ -18,6 +18,7 @@ parser.add_argument('-q', '--quiet', help="minimalistic console output.", action
 parser.add_argument('-i', '--ignore', nargs='+', type=str, help="ignore a list of classes.")
 # argparse receiving list of classes with specific IoU (e.g., python main.py --set-class-iou person 0.7)
 parser.add_argument('--set-class-iou', nargs='+', type=str, help="set IoU for a specific class.")
+parser.add_argument('--classes', type=str, help='names of classes as "name1,name2" in order as in labels.txt ')
 args = parser.parse_args()
 
 '''
@@ -574,9 +575,12 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
     # Create Precision-Recall curve and compute AP for each class
     px, py = np.linspace(0, 1, 1000), []  # for plotting
     ap, p, r = np.zeros((nc, tp.shape[1])), np.zeros((nc, 1000)), np.zeros((nc, 1000))
+
+    nt = [] #number of targets per class
     for ci, c in enumerate(unique_classes):
         i = pred_cls == c
         n_l = (target_cls == c).sum()  # number of labels
+        nt.append(n_l)
         n_p = i.sum()  # number of predictions
 
         if n_p == 0 or n_l == 0:
@@ -604,7 +608,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
     f1 = 2 * p * r / (p + r + 1e-16)
 
     i = f1.mean(0).argmax()  # max F1 index
-    return p[:, i], r[:, i], ap, f1[:, i], unique_classes.astype('int32')
+    return p[:, i], r[:, i], ap, f1[:, i], unique_classes.astype('int32'), np.array(nt)
 
 
 def calculate_ap_for_each_class():
@@ -712,8 +716,20 @@ def calculate_ap_for_each_class():
         return tp, conf, pred_cls, target_cls
 
 tp, conf, pred_cls, target_cls = calculate_ap_for_each_class()
-p, r, ap, f1, ap_class = ap_per_class(tp, conf, pred_cls, target_cls)
+p, r, ap, f1, ap_class, nt = ap_per_class(tp, conf, pred_cls, target_cls)
 
+ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+
+# Print results
+s = ('%20s' + '%11s' * 6) % ('Class', 'Images', 'Labels', 'P', 'R', 'mAP@.5', 'mAP@.5:.95')
+print(s)
+pf = '%20s' + '%11i' * 2 + '%11.3g' * 4  # print format
+print(pf % ('all', len(ground_truth_files_list), nt.sum(), mp, mr, map50, map))
+
+args.classes = args.classes.split(",")
+for i, c in enumerate(ap_class):
+    print(pf % (args.classes[c], len(ground_truth_files_list), nt[c], p[i], r[i], ap50[i], ap[i]))
 """
  Draw false negatives
 """
