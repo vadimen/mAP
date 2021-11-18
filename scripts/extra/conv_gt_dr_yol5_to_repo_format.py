@@ -49,7 +49,10 @@ def convert():
             lines = file.readlines()
             file = open(f"{args.save_dir}/{txt_file}", "w")
             for line in lines:
-                cls, xcent, ycent, width, height, conf = [float(e) for e in line.split(" ")]
+                if args.dt:
+                    cls, xcent, ycent, width, height, conf = [float(e) for e in line.split(" ")]
+                else:
+                    cls, xcent, ycent, width, height = [float(e) for e in line.split(" ")]
                 xcent, width = xcent*w, width*w
                 ycent, height = ycent*h, height*h
                 xleft = int(xcent - width/2)

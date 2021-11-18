@@ -651,11 +651,11 @@ def calculate_ap_for_each_class():
 
             pred_start = 0  # from where we start writing every tp
             if pred_cls is None:
-                pred_cls = np.ndarray([nd], dtype=np.uint8)
+                pred_cls = np.ndarray([nd], dtype=np.float64)
                 pred_cls[:] = class_index
             else:
                 pred_start = pred_cls.shape[0]
-                pred_cls = np.append(pred_cls, np.ndarray([nd], dtype=np.uint8))
+                pred_cls = np.append(pred_cls, np.ndarray([nd], dtype=np.float64))
                 pred_cls[pred_start:] = class_index
 
             for idx, detection in enumerate(dr_data):
@@ -690,31 +690,6 @@ def calculate_ap_for_each_class():
                                 gt_match = obj
                 used_file_ids.append(file_id)
 
-                # assign detection as true positive/don't care/false positive
-
-                # set minimum overlap
-                # if specific_iou_flagged:
-                #     if class_name in specific_iou_classes:
-                #         index = specific_iou_classes.index(class_name)
-                #         min_overlap = float(iou_list[index])
-
-                # if ovmax >= min_overlap:
-                #     if "difficult" not in gt_match:
-                #         if not bool(gt_match["used"]):
-                #             # true positive
-                #             tp[tp_start+idx, i] = True
-                #             gt_match["used"] = True
-                #             count_true_positives[class_name] += 1
-                #             # update the ".json" file
-                #             with open(gt_file, 'w') as f:
-                #                 f.write(json.dumps(ground_truth_data))
-                #         else:
-                #             # false positive (multiple detection)
-                #             pass
-                # else:
-                #     # false positive
-                #     pass
-
                 if gt_match != -1 and "difficult" not in gt_match:
                     if not bool(gt_match["used"]):
                         do_the_rest = False
@@ -734,13 +709,7 @@ def calculate_ap_for_each_class():
                         # false positive (multiple detection)
                         pass
 
-        os.system(f"rm -r {TEMP_FILES_PATH}")
-        os.system(f"cp -r {TEMP_FILES_PATH}2 {TEMP_FILES_PATH}")
         return tp, conf, pred_cls, target_cls
-
-# make reserve copy for gt files
-os.system(f"rm -r {TEMP_FILES_PATH}2")
-os.system(f"cp -r {TEMP_FILES_PATH} {TEMP_FILES_PATH}2")
 
 tp, conf, pred_cls, target_cls = calculate_ap_for_each_class()
 p, r, ap, f1, ap_class = ap_per_class(tp, conf, pred_cls, target_cls)
