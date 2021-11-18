@@ -1,12 +1,15 @@
+What I changed: 
+In this version there is calculated map@0.5 and map@0.5:0.95
+
+added:
+conv_gt_dr_yol5_to_repo_format.py
+conv_dr_yol4_to_repo_format.py -> converts result.txt from yolov4
+
 # mAP (mean Average Precision)
 
 [![GitHub stars](https://img.shields.io/github/stars/Cartucho/mAP.svg?style=social&label=Stars)](https://github.com/Cartucho/mAP)
 
 This code will evaluate the performance of your neural net for object recognition.
-
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/15831541/37559643-6738bcc8-2a21-11e8-8a07-ed836f19c5d9.gif" width="450" height="300" />
-</p>
 
 In practice, a **higher mAP** value indicates a **better performance** of your neural net, given your ground-truth and set of classes.
 
