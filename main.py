@@ -19,6 +19,7 @@ parser.add_argument('-i', '--ignore', nargs='+', type=str, help="ignore a list o
 # argparse receiving list of classes with specific IoU (e.g., python main.py --set-class-iou person 0.7)
 parser.add_argument('--set-class-iou', nargs='+', type=str, help="set IoU for a specific class.")
 parser.add_argument('--classes', type=str, help='names of classes as "name1,name2" in order as in labels.txt ')
+parser.add_argument('--train-gt-folder', type=str, help='folder containing training labels')
 args = parser.parse_args()
 
 '''
@@ -727,9 +728,33 @@ print(s)
 pf = '%20s' + '%11i' * 2 + '%11.3g' * 4  # print format
 print(pf % ('all', len(ground_truth_files_list), nt.sum(), mp, mr, map50, map))
 
-args.classes = args.classes.split(",")
 for i, c in enumerate(ap_class):
-    print(pf % (args.classes[c], len(ground_truth_files_list), nt[c], p[i], r[i], ap50[i], ap[i]))
+    print(pf % (args.classes.split(',')[c] if args.classes is not None else c
+                , len(ground_truth_files_list), nt[c], p[i], r[i], ap50[i], ap[i]))
+
+#show amount of labels per class in train set
+if len(args.train_gt_folder) > 0:
+    path = args.train_gt_folder
+    files = os.listdir(path)
+    dicti = {}
+    for file in files:
+        if '.txt' in file and "labels" not in file:
+            with open(path + file, 'r') as f:
+                lines = f.readlines()
+
+            for line in lines:
+                nr = line.split(" ")[0]
+                if nr in dicti:
+                    dicti[nr] = dicti[nr] + 1
+                else:
+                    dicti[nr] = 1
+
+    train = {key: int(dicti[key]) for key in sorted(dicti.keys(), key=int)}
+
+    print("\n\nlabels per class in train set:")
+    print(args.classes if args.classes is not None else "")
+    print(train)
+
 """
  Draw false negatives
 """
