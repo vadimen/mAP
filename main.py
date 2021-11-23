@@ -20,6 +20,7 @@ parser.add_argument('-i', '--ignore', nargs='+', type=str, help="ignore a list o
 parser.add_argument('--set-class-iou', nargs='+', type=str, help="set IoU for a specific class.")
 parser.add_argument('--classes', type=str, help='names of classes as "name1,name2" in order as in labels.txt ')
 parser.add_argument('--train-gt-folder', type=str, help='folder containing training labels')
+parser.add_argument('--log', type=str, help='just a text inserted into logs')
 args = parser.parse_args()
 
 '''
@@ -722,18 +723,31 @@ p, r, ap, f1, ap_class, nt = ap_per_class(tp, conf, pred_cls, target_cls)
 ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
 mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
 
+out_log = open("log_out.txt", "a")
+out_log.write("*"*20)
+out_log.write("\n")
+out_log.write("*"*20)
+out_log.write("\n")
+out_log.write("*"*20)
+out_log.write("\n")
+out_log.write(args.log  + "\n")
+
 # Print results
 s = ('%20s' + '%11s' * 6) % ('Class', 'Images', 'Labels', 'P', 'R', 'mAP@.5', 'mAP@.5:.95')
 print(s)
+out_log.write(s+"\n")
 pf = '%20s' + '%11i' * 2 + '%11.3g' * 4  # print format
 print(pf % ('all', len(ground_truth_files_list), nt.sum(), mp, mr, map50, map))
-
+out_log.write(pf % ('all', len(ground_truth_files_list), nt.sum(), mp, mr, map50, map)+"\n")
+print("-"*100)
+out_log.write("-"*100 + "\n")
 for i, c in enumerate(ap_class):
-    print(pf % (args.classes.split(',')[c] if args.classes is not None else c
-                , len(ground_truth_files_list), nt[c], p[i], r[i], ap50[i], ap[i]))
+    s = pf % (args.classes.split(',')[c] if args.classes is not None else c, len(ground_truth_files_list), nt[c], p[i], r[i], ap50[i], ap[i])
+    print(s)
+    out_log.write(s + "\n")
 
 #show amount of labels per class in train set
-if len(args.train_gt_folder) > 0:
+if args.train_gt_folder:
     path = args.train_gt_folder
     files = os.listdir(path)
     dicti = {}
@@ -754,7 +768,21 @@ if len(args.train_gt_folder) > 0:
     print("\n\nlabels per class in train set:")
     print(args.classes if args.classes is not None else "")
     print(train)
+    out_log.write("\n\nlabels per class in train set:"+"\n")
+    out_log.write(args.classes if args.classes is not None else "")
+    out_log.write(str(train))
 
+print("\n\n\n----- for easy insertion into a sheet just copy this by row")
+out_log.write("\n\n\n----- for easy insertion into a sheet just copy this by row"+"\n")
+a = ['all', str(len(ground_truth_files_list)), str(nt.sum()), '%2.3g'%mp, '%2.3g'%mr, '%2.3g'%map50, '%2.3g'%map]
+print("\t".join(a))
+out_log.write("\t".join(a) + "\n")
+for i, c in enumerate(ap_class):
+    a = [args.classes.split(',')[c] if args.classes is not None else c
+                , str(len(ground_truth_files_list)), str(nt[c]), '%2.3g'%p[i], '%2.3g'%r[i], '%2.3g'%ap50[i], '%2.3g'%ap[i]]
+    print( "\t".join(a) )
+    out_log.write("\t".join(a) + "\n")
+out_log.close()
 """
  Draw false negatives
 """

@@ -26,45 +26,48 @@ def convert():
 
     image_names = os.listdir(args.img_dir)
     for txt_file in os.listdir(args.gt_dr_dir):
-        #find .txt and exclude it from txt_file
-        res = re.search("(\\.txt)$", txt_file)
-        if not res:
-            print("wrong file", txt_file)
-            break
-        image_name_to_check = txt_file[: res.span()[0]]
 
-        txt_has_match = None
-        for name in image_names:
-            #search for .jpg .jpeg .png and exclude it
-            res = re.search("(\\.....?)$", name)
-            if res:
-                tmp_name = name[:res.span()[0]]
-                if image_name_to_check == tmp_name:
-                    txt_has_match = name
-                    break
+        if ".txt" in txt_file:
+            # find .txt and exclude it from txt_file
+            res = re.search("(\\.txt)$", txt_file)
+            if not res:
+                print("wrong file", txt_file)
+                break
+            image_name_to_check = txt_file[: res.span()[0]]
 
-        if txt_has_match:
-            h, w, _ = cv2.imread(f"{args.img_dir}/{txt_has_match}").shape
-            file = open(f"{args.gt_dr_dir}/{txt_file}", "r")
-            lines = file.readlines()
-            file = open(f"{args.save_dir}/{txt_file}", "w")
-            for line in lines:
-                if args.dt:
-                    cls, xcent, ycent, width, height, conf = [float(e) for e in line.split(" ")]
-                else:
-                    cls, xcent, ycent, width, height = [float(e) for e in line.split(" ")]
-                xcent, width = xcent*w, width*w
-                ycent, height = ycent*h, height*h
-                xleft = int(xcent - width/2)
-                ytop = int(ycent - height/2)
-                xright = int(xcent + width/2)
-                ybottom = int(ycent + height/2)
-                if args.dt:
-                    file.write(f"{int(cls)} {conf} {xleft} {ytop} {xright} {ybottom}\n")
-                else:
-                    file.write(f"{int(cls)} {xleft} {ytop} {xright} {ybottom}\n")
-            file.close()
-        else:
-            print("!!!!!txt with no match", txt_file)
+            txt_has_match = None
+            for name in image_names:
+                #search for .jpg .jpeg .png and exclude it
+                if '.txt' not in name:
+                    res = re.search("(\\.....?)$", name)
+                    if res:
+                        tmp_name = name[:res.span()[0]]
+                        if image_name_to_check == tmp_name:
+                            txt_has_match = name
+                            break
+
+            if txt_has_match:
+                h, w, _ = cv2.imread(f"{args.img_dir}/{txt_has_match}").shape
+                file = open(f"{args.gt_dr_dir}/{txt_file}", "r")
+                lines = file.readlines()
+                file = open(f"{args.save_dir}/{txt_file}", "w")
+                for line in lines:
+                    if args.dt:
+                        cls, xcent, ycent, width, height, conf = [float(e) for e in line.split(" ")]
+                    else:
+                        cls, xcent, ycent, width, height = [float(e) for e in line.split(" ")]
+                    xcent, width = xcent*w, width*w
+                    ycent, height = ycent*h, height*h
+                    xleft = int(xcent - width/2)
+                    ytop = int(ycent - height/2)
+                    xright = int(xcent + width/2)
+                    ybottom = int(ycent + height/2)
+                    if args.dt:
+                        file.write(f"{int(cls)} {conf} {xleft} {ytop} {xright} {ybottom}\n")
+                    else:
+                        file.write(f"{int(cls)} {xleft} {ytop} {xright} {ybottom}\n")
+                file.close()
+            else:
+                print("!!!!!txt with no match", txt_file)
 
 convert()
